@@ -54,7 +54,7 @@ import { IDeployArtifacts } from "../artifacts/artifacts";
 const artifacts = locklift.deployArtifacts.getArtifacts<IDeployArtifacts>();
 console.log("SampleA contract address",artifacts.local.SampleA.v0.address)
 ```
-![read deploy artifacts](./assets/read_deploy_artifacts.png)
+![read deploy artifacts](https://raw.githubusercontent.com/venom-blockchain/locklift-deploy-artifacts/main/assets/read_deploy_artifacts.png?token=GHSAT0AAAAAAB73MB3NU47KJSJHE3WWGGL4ZAPHIAQ))
 
 ### reset()
 This method deletes all artifacts and resets storage:
