@@ -1,0 +1,8 @@
+/node_modules/
+/dist/
+/.idea/
+/workFiles/
+./config.json
+
+pkg/locklift
+artifacts
