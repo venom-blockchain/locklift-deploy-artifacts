@@ -25,17 +25,15 @@ declare module "locklift" {
 
 ## Usage
 
-The deploy artifacts plugin provides several methods to interact with the build artifacts. See `./example` directory to find examples.
-
-Here are the methods and their explanations:
+The deploy artifacts plugin provides methods to interact with the build artifacts. You can find an example project in the `./example` directory.
 
 ### deployContract()
 This method deploys a contract and saves its artifacts to the `./artifacts` directory.
 
 It takes three arguments:
-`alias` - the alias of the contract
-`version` - the version of the contract, use "latest" to increment version
-`args` - the deployment parameters, the same as you use at `locklift.factory.deployContract()`
+ - `alias` - the alias of the contract
+ - `version` - the version of the contract, use "latest" to increment version
+ - `args` - the deployment parameters, the same as you use at `locklift.factory.deployContract()`
 
 ```ts
 const { contract, tx } = await locklift.deployArtifacts.deployContract(alias, version, args);
@@ -57,18 +55,3 @@ This method deletes all artifacts and resets storage:
 ```ts
 locklift.deployArtifacts.reset();
 ```
-
-
-### ./artifacts directory
-The directory to store deploy artifacts. Have the following structure:
-```bash
-./artifacts
-├── artifacts.d.ts 
-├── journal.json
-└── local
-```
-artifacts.d.ts - stores IDeployArtifacts interface
-journal.json - file to store actual values
-local - directory to store contracts deployed to the local network
-
-

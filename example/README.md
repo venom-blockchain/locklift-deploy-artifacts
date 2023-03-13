@@ -8,7 +8,7 @@ First, we need to install all required dependencies.
 npm i
 ```
 
-We will deploy the contract to the local network. So we need to start the local node:
+We will deploy the contract to the local network. So we need to run the local node:
 ```bash
 npm run run:local-node
 
@@ -16,7 +16,7 @@ npm run run:local-node
 # npm run stop:local-node
 ```
 
-The next step is the initialize plugin via `locklift.config.ts` file:
+The next step is to initialize plugin via `locklift.config.ts` file:
 ```ts
 // locklift.config.ts
 
@@ -31,39 +31,12 @@ declare module "locklift" {
 
 ```
 
-Great! We are ready to deploy our contract via locklift-deploy-artifacts plugin. So let's take a look at the actual deployment script. You can find it in the `./scripts` directory:
-```ts
-// ./scripts/00-deploy.ts
-async function main() {
-  console.log("Starting Sample contract deployment...");
-
-  const signer = (await locklift.keystore.getSigner("0"))!;
-
-  const { contract: sample } = await locklift.deployArtifacts.deployContract("SampleA", "latest", {
-    contract: "Sample",
-    publicKey: signer.publicKey,
-    initParams: { _nonce: 0 },
-    constructorParams: { _state: 0 },
-    value: locklift.utils.toNano(3),
-  });
-
-  console.log("sample contract address:", sample.address.toString());
-}
-
-main()
-  .then(() => process.exit(0))
-  .catch(e => {
-    console.log(e);
-    process.exit(1);
-  });
-```
-
-Now we are ready to deploy our contract:
+Great! We have installed all dependencies and run local node. So we are ready to deploy our contract:
 ```bash
 npx locklift run --network local --script scripts/00-deploy.ts
 ```
 
-After you run this command, the plugin will try to deploy contract and save deploy artifacts on success. 
+After you run this command, the plugin will try to deploy the contract and save deploy artifacts on success. 
 
 Artifacts would be saved to the `./artifacts` directory:
 ```bash
@@ -96,3 +69,5 @@ function main() {
 }
 main();
 ```
+
+All scripts are available at the `./scripts` directory.
