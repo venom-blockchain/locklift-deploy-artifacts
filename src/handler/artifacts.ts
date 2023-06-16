@@ -13,17 +13,29 @@ export type VersionName = string;
 export type Data = Map<NetworkName, Contracts>;
 export type Contracts = Map<ContractName, Map<AliasName, Map<VersionName, Version>>>;
 
-export type Version = {
+export interface Version {
   address: string;
   codeHash: string;
   initParams: any;
   constructorParams: any;
   publicKey?: string;
   updatedAt?: number;
-  abi: string;
+  abi: any;
   tvc: string;
   code: string;
-};
+}
+
+export interface ContractVersion<ABI> {
+  address: string;
+  codeHash: string;
+  initParams: any;
+  constructorParams: any;
+  publicKey: string;
+  updatedAt: number;
+  abi: ABI;
+  code: string;
+  tvc: string;
+}
 
 export type JournalData = Map<NetworkName, JournalContracts>;
 export type JournalContracts = Map<ContractName, Map<AliasName, Map<VersionName, JournalVersion>>>;
@@ -125,6 +137,7 @@ export class Artifacts {
     fs.writeFileSync(p.join(versionPath, "tvc"), params.tvc);
     fs.writeFileSync(p.join(versionPath, "abi.json"), JSON.stringify(params.abi, null, 2));
     fs.writeFileSync(p.join(versionPath, "code"), params.code);
+    fs.writeFileSync(p.join(versionPath, "source.ts"), generateContractCode(JSON.stringify(params.abi), contractName));
   }
 
   private saveTypeDefinitions() {
@@ -177,8 +190,8 @@ export class Artifacts {
             const ver: Version = contract[aliasName][versionName];
 
             const { abi, code, tvc } = this.getContractArtifacts(networkName, contractName, aliasName, versionName);
-
-            const extended: Version = { ...ver, abi, code, tvc };
+            const abiObj = JSON.parse(abi);
+            const extended: Version = { ...ver, abi: abiObj, code, tvc };
 
             versions.set(versionName, extended);
           });
@@ -208,7 +221,7 @@ export class Artifacts {
 
   private getContractNextVersion(network: string, contractName: string, aliasName: string): string {
     let alias = this.data?.get(network)?.get(contractName)?.get(aliasName);
-    return alias ? `v_${alias.size}` : "v_0";
+    return alias ? `v${alias.size}` : "v0";
   }
 
   private toObject(map = new Map()): any {
@@ -233,7 +246,7 @@ export function createTypeDefinitions(interfaceName: string, data: Data): string
         indent += 2;
         for (const [version, versionData] of versions) {
           ii += formatIndent(indent, `${version}: {`);
-          const obj = typeLeafNode(versionData);
+          const obj = typeLeafNode(versionData, network, contract, alias, version);
           ii += `\n${stringifyObj(obj, indent + 2)}${" ".repeat(indent)}};`;
         }
         indent -= 2;
@@ -267,7 +280,7 @@ function formatIndent(indention: number, mask: string): string {
   return `\n${" ".repeat(indention)}` + mask;
 }
 
-function typeLeafNode(obj: any): any {
+function typeLeafNode(obj: any, network: string, contract: string, alias: string, version: string): any {
   if (typeof obj !== "object") {
     return typeof obj;
   }
@@ -276,10 +289,10 @@ function typeLeafNode(obj: any): any {
   for (const key in obj) {
     if (obj.hasOwnProperty(key)) {
       if (key === "abi") {
-        result[key] = "string";
+        result[key] = `import("./${network}/${contract}/${alias}/${version}/source").${contract}Abi`;
         continue;
       }
-      result[key] = typeLeafNode(obj[key]);
+      result[key] = typeLeafNode(obj[key], network, contract, alias, version);
     }
   }
   return result;
@@ -308,4 +321,13 @@ function deleteDirectory(directoryPath: string) {
     });
     fs.rmdirSync(directoryPath);
   }
+}
+
+function generateContractCode(abiSource: string, contractName: string): string {
+  const abiSourceName = contractName.slice(0, 1).toLowerCase() + contractName.slice(1) + "Abi";
+
+  let code = `const ${abiSourceName} = ${abiSource.replace(/\s/g, "")} as const`;
+  code += `\nexport type ${contractName}Abi = typeof ${abiSourceName};\n`;
+
+  return code;
 }
